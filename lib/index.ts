@@ -1,8 +1,8 @@
 import { observable, action, computed, extendObservable, ObservableMap, Iterator } from 'mobx';
 import { deserialize, update, serializable, ModelSchema } from 'serializr';
-import { DomainService } from './lib/domain-service';
-import { Selectors, NextRouterState } from './lib/domain-selectors';
-import DomainStore from './lib/domain-store';
+import { DomainService } from './domain-service';
+import { Selectors, NextRouterState } from './domain-selectors';
+import DomainStore from './domain-store';
 
 export interface DomainStoreConfig<T> {
     name: string;
@@ -11,8 +11,6 @@ export interface DomainStoreConfig<T> {
     modelKey?: string | number;
     selectors?: Selectors<T>
 }
-
-export { DomainService };
 
 export function createDomainStore<T>(config:DomainStoreConfig<T>) {
     const { name, serviceToInject, domainModel } = config;
