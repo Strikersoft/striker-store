@@ -1,8 +1,8 @@
 {
   "name": "striker-store",
   "license": "MIT",
-  "version": "1.0.2",
-  "description": "Strikersoft vision of creating domain stores in SPA",
+  "version": "1.0.3",
+  "description": "Strikersoft vision of creating domain stores using mobx",
   "jsnext:main": "build/es/striker-store.js",
   "main": "build/cjs/striker-store.js",
   "umd:main": "build/umd/striker-store.umd.js",
@@ -15,6 +15,15 @@
     "build:umd": "BUILD_TYPE=umd rollup -c rollup.config.js",
     "build:iife": "BUILD_TYPE=iife rollup -c rollup.config.js"
   },
+  "keywords": [
+    "mobx",
+    "serializr",
+    "store",
+    "reactjs",
+    "model",
+    "state management",
+    "data flow"
+  ],
   "author": "Ostap Chervak <ochervak@strikersoft.com>",
   "peerDependencies": {
     "mobx": "3.x",
