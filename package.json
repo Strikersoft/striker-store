@@ -1,7 +1,7 @@
 {
   "name": "striker-store",
   "license": "MIT",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Strikersoft vision of creating domain stores in SPA",
   "jsnext:main": "build/es/striker-store.js",
   "main": "build/cjs/striker-store.js",
