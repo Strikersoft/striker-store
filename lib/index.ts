@@ -1,8 +1,30 @@
 import { observable, action, computed, extendObservable, ObservableMap, Iterator } from 'mobx';
 import { deserialize, update, serializable, ModelSchema } from 'serializr';
-import { DomainService } from './domain-service';
-import { Selectors, NextRouterState } from './domain-selectors';
 import DomainStore from './domain-store';
+
+export interface Selectors {
+  paramsSelector?: (nextState: NextRouterState) => NextRouterState;
+  paramsItemSelector?: (nextState: NextRouterState) => NextRouterState;
+  listSelector?: (data: any) => {}[];
+  itemSelector?: (model: any) => {};
+}
+
+export interface RouterParams {
+  id: string;
+}
+
+export interface NextRouterState {
+  params: RouterParams;
+  [propName: string]: any;
+}
+
+
+export interface DomainService {
+  fetch (...args): PromiseLike<any>;
+  fetchOne (...args): PromiseLike<any>;
+  query (...args): PromiseLike<any>;
+}
+
 
 export interface DomainStoreConfig {
   name: string;
@@ -18,9 +40,11 @@ export interface DomainStoreResponse {
   itemResolver: (nextState: NextRouterState, replace, callback: () => void) => void;
 }
 
+export { DomainStore };
+
 export function createDomainStore(config: DomainStoreConfig) {
 
-  const store = new DomainStore(config.name, config.serviceToInject, config.domainModel, config.selectors, config.modelKey);
+  const store = new DomainStore(config.name, config.serviceToInject, config.domainModel, config.selectors, config.modelKey || 'id');
   const { selectors = {} } = config;
 
   function listResolver(nextState: NextRouterState, replace, callback: () => void) {

@@ -1,8 +1,7 @@
 import { observable, action, computed, extendObservable, ObservableMap, Iterator } from 'mobx';
 import { deserialize, update, serializable, ModelSchema } from 'serializr';
-import { DomainService } from './domain-service';
-import { Selectors } from './domain-selectors';
 import { invariant } from './utils';
+import { DomainService, Selectors } from './index';
 
 export default class DomainStore {
   @observable private __data__ = observable.map({});
@@ -19,7 +18,7 @@ export default class DomainStore {
     service: DomainService,
     domainModel: ModelSchema<any> | (new () => any),
     selectors: Selectors,
-    modelKey: string | number = 'id'
+    modelKey: string | number
   ) {
     this.name = name;
     this.serviceToInject = service;
