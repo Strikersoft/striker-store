@@ -5,39 +5,42 @@ import { Selectors, NextRouterState } from './domain-selectors';
 import DomainStore from './domain-store';
 
 export interface DomainStoreConfig<T> {
-    name: string;
-    serviceToInject: DomainService;
-    domainModel: ModelSchema<T> | (new () => T),
-    modelKey?: string | number;
-    selectors?: Selectors<T>
+  name: string;
+  serviceToInject: DomainService;
+  domainModel: ModelSchema<T> | (new () => T);
+  modelKey?: string | number;
+  selectors?: Selectors<T>;
 }
 
-export function createDomainStore<T>(config:DomainStoreConfig<T>) {
-    const { name, serviceToInject, domainModel } = config;
-    const { paramsSelector = null, paramsItemSelector = null, dataSelector = null, modelNormalizer = null } = config.selectors || {};
+export { DomainService };
+export { DomainStore };
 
-    const store = new DomainStore(name, serviceToInject, domainModel, config.selectors || {});
+export function createDomainStore<T>(config: DomainStoreConfig<T>) {
+  const { name, serviceToInject, domainModel } = config;
+  const { paramsSelector = null, paramsItemSelector = null, dataSelector = null, modelNormalizer = null } = config.selectors || {};
 
-    function listResolver(nextState: NextRouterState, replace, callback: () => void) {
-        if (store.data.size > 0) {
-            callback();
-            store.fetchItems(paramsSelector ? paramsSelector(nextState) : []);
-        } else {
-            store.fetchItems(paramsSelector ? paramsSelector(nextState) : []).then(() => { callback(); })
-        }
+  const store = new DomainStore(name, serviceToInject, domainModel, config.selectors || {});
+
+  function listResolver(nextState: NextRouterState, replace, callback: () => void) {
+    if (store.data.size > 0) {
+      callback();
+      store.fetchItems(paramsSelector ? paramsSelector(nextState) : []);
+    } else {
+      store.fetchItems(paramsSelector ? paramsSelector(nextState) : []).then(() => { callback(); });
     }
+  }
 
-    function itemResolver(nextState: NextRouterState, replace, callback: () => void) {
-        const item = store.getItem(nextState.params.id);
+  function itemResolver(nextState: NextRouterState, replace, callback: () => void) {
+    const item = store.getItem(nextState.params.id);
 
-        if (item) {
-            callback();
-            store.fetchItemById(paramsItemSelector ? paramsItemSelector(nextState) : nextState.params.id)
-        } else {
-            store.fetchItemById(paramsItemSelector ? paramsItemSelector(nextState) : nextState.params.id)
-                .then(() => {callback();})
-        }
+    if (item) {
+      callback();
+      store.fetchItemById(paramsItemSelector ? paramsItemSelector(nextState) : nextState.params.id);
+    } else {
+      store.fetchItemById(paramsItemSelector ? paramsItemSelector(nextState) : nextState.params.id)
+        .then(() => { callback(); });
     }
+  }
 
-    return { store, listResolver, itemResolver };
+  return { store, listResolver, itemResolver };
 }

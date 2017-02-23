@@ -7,7 +7,8 @@
   "main": "build/cjs/striker-store.js",
   "umd:main": "build/umd/striker-store.umd.js",
   "scripts": {
-    "test": "npm test",
+    "test": "tslint --project lib --force && jest",
+    "test:watch": "jest --watch",
     "clean": "rimraf build",
     "build": "npm-run-all clean build:*",
     "build:cjs": "BUILD_TYPE=cjs rollup -c rollup.config.js",
@@ -32,8 +33,10 @@
   "devDependencies": {
     "@types/es6-collections": "^0.5.29",
     "@types/es6-promise": "^0.0.32",
+    "@types/jest": "^18.1.1",
+    "jest": "^19.0.1",
     "mobx": "^3.1.0",
-    "npm-run-all": "^4.0.1",
+    "npm-run-all": "^4.0.2",
     "rimraf": "^2.6.0",
     "rollup": "^0.41.4",
     "rollup-plugin-babili": "^1.1.1",
@@ -41,7 +44,24 @@
     "rollup-plugin-uglify": "^1.0.1",
     "serializr": "^1.1.9",
     "tslint": "^4.4.2",
-    "typescript": "^2.1.6"
+    "tslint-eslint-rules": "^3.4.0",
+    "typescript": "^2.2.1"
   },
-  "dependencies": {}
+  "dependencies": {},
+  "jest": {
+    "moduleFileExtensions": [
+      "ts",
+      "js"
+    ],
+    "collectCoverage": true,
+    "collectCoverageFrom": [
+      "lib/*.ts"
+    ],
+    "transform": {
+      "^.+\\.(ts)$": "<rootDir>/preprocessor.js"
+    },
+    "testMatch": [
+      "*/**/*.test.ts"
+    ]
+  }
 }

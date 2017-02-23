@@ -3,3 +3,4 @@
 .fusebox
 node_modules
 build
+coverage
