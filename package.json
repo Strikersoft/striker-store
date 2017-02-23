@@ -1,7 +1,7 @@
 {
   "name": "striker-store",
   "license": "MIT",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Strikersoft vision of creating domain stores using mobx",
   "jsnext:main": "build/es/striker-store.js",
   "main": "build/cjs/striker-store.js",
