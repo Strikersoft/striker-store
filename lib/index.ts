@@ -3,8 +3,9 @@ import { deserialize, update, serializable, ModelSchema } from 'serializr';
 import DomainStore from './domain-store';
 
 export interface Selectors {
-  paramsSelector?: (nextState: NextRouterState) => NextRouterState;
-  paramsItemSelector?: (nextState: NextRouterState) => NextRouterState;
+  paramsSelector?: (nextState: NextRouterState) => any;
+  paramsItemSelector?: (nextState: NextRouterState) => any;
+  paramsModelSelector?: (nextState: NextRouterState) => string | number;
   listSelector?: (data: any) => {}[];
   itemSelector?: (model: any) => {};
 }
@@ -58,7 +59,7 @@ export function createDomainStore(config: DomainStoreConfig) {
   }
 
   function itemResolver(nextState: NextRouterState, replace, callback: () => void) {
-    const item = store.getItem(nextState.params.id);
+    const item = store.getItem(selectors.paramsModelSelector ? selectors.paramsModelSelector(nextState) : nextState.params.id);
     const fetch = store.fetchItemById(selectors.paramsItemSelector ? selectors.paramsItemSelector(nextState) : nextState.params.id);
 
     if (item) {

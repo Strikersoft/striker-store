@@ -88,6 +88,11 @@ export default class DomainStore {
   }
 
   public getItem(id: string | number ): {} {
+    if (!id) {
+      invariant(`Item not found by id=${id}`);
+      return;
+    }
+
     return this.data.get(id.toString());
   }
 
