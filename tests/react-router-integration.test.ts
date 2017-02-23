@@ -1,18 +1,21 @@
-import { createDomainStore } from '../lib/index';
+import { createDomainStore, DomainStoreConfig, DomainStoreResponse } from '../lib/index';
 import { MockUserModel, MockUserService } from './utils';
 
 describe('createDomainStore - resolvers', () => {
-  let domainStore;
+  let storeResp: DomainStoreResponse;
+
   beforeEach(() => {
-    domainStore = createDomainStore({
+    const config: DomainStoreConfig = {
       name: 'users',
       serviceToInject: new MockUserService(),
       domainModel: MockUserModel
-    });
+    };
+
+    storeResp = createDomainStore(config);
   });
 
   it('should resolve item for react-router', (done) => {
-    const { store, itemResolver, listResolver } = domainStore;
+    const { store, itemResolver, listResolver } = storeResp;
 
     itemResolver({ params: { id: MockUserService.getMockModel().id.toString() }}, {}, () => {
       expect(store.data.size).toBeGreaterThan(0);
@@ -21,7 +24,7 @@ describe('createDomainStore - resolvers', () => {
   });
 
   it('should resolve list for react-router', (done) => {
-    const { store, itemResolver, listResolver } = domainStore;
+    const { store, itemResolver, listResolver } = storeResp;
 
     listResolver({ params: { id: MockUserService.getMockModel().id.toString() }}, {}, () => {
       expect(store.data.size).toBeGreaterThan(0);

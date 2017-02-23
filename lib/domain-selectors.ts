@@ -1,10 +1,10 @@
 import { deserialize, update, serializable, ModelSchema } from 'serializr';
 
-export interface Selectors<T> {
+export interface Selectors {
   paramsSelector?: (nextState: NextRouterState) => NextRouterState;
   paramsItemSelector?: (nextState: NextRouterState) => NextRouterState;
-  dataSelector?: (data: {}[]) => {}[];
-  modelNormalizer?: (model: {}) => {};
+  listSelector?: (data: any) => {}[];
+  itemSelector?: (model: any) => {};
 }
 
 export interface RouterParams {

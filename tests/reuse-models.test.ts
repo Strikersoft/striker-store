@@ -1,22 +1,24 @@
-import { createDomainStore } from '../lib/index';
+import { createDomainStore, DomainStoreConfig, DomainStore } from '../lib/index';
 import { MockUserModel, MockUserService } from './utils';
 
 describe('createDomainStore - model re-usage', () => {
-  let domainStore;
+  let domainStore: DomainStore;
+
   beforeEach(() => {
-    domainStore = createDomainStore({
+    const config: DomainStoreConfig = {
       name: 'users',
       serviceToInject: new MockUserService(),
       domainModel: MockUserModel
-    });
+    };
+
+    domainStore = createDomainStore(config).store;
   });
 
   it('should re-use existing model if same ID already exists', async () => {
-    const { store } = domainStore;
 
-    await store.fetchItemById(MockUserService.getMockModel().id);
-    await store.fetchItemById(MockUserService.getMockModel().id);
+    await domainStore.fetchItemById(MockUserService.getMockModel().id);
+    await domainStore.fetchItemById(MockUserService.getMockModel().id);
 
-    expect(store.getItem(1) === store.getItem(1)).toBeTruthy();
+    expect(domainStore.getItem(1) === domainStore.getItem(1)).toBeTruthy();
   });
 });

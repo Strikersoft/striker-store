@@ -3,3 +3,5 @@
 .fusebox
 node_modules
 *.ts
+coverage
+tests
