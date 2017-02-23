@@ -2,34 +2,45 @@ import { observable, action, computed, extendObservable, ObservableMap, Iterator
 import { deserialize, update, serializable, ModelSchema } from 'serializr';
 import { DomainService } from './domain-service';
 import { Selectors } from './domain-selectors';
+import { invariant } from './utils';
 
-
-export default class DomainStore<T> {
+export default class DomainStore {
   @observable private __data__ = observable.map({});
   private __rawData__;
 
   private serviceToInject: DomainService;
-  private selectors: Selectors<T>;
+  private selectors: Selectors;
   private name: string;
   private modelKey: string | number;
-  private model: ModelSchema<T> | (new () => T);
+  private model: ModelSchema<any> | (new () => any);
 
-  constructor(name: string, service: DomainService, domainModel: ModelSchema<T> | (new () => T), selectors: Selectors<T>, modelKey = 'id') {
+  constructor(
+    name: string,
+    service: DomainService,
+    domainModel: ModelSchema<any> | (new () => any),
+    selectors: Selectors,
+    modelKey = 'id'
+  ) {
     this.name = name;
     this.serviceToInject = service;
-    this.selectors = selectors;
+    this.selectors = selectors || {};
     this.model = domainModel;
     this.modelKey = modelKey;
   }
 
   public fetchItems<T>(...args): PromiseLike<T> {
     return this.serviceToInject.fetch(...args)
-      .then(this.resetItems);
+      .then((response) => this.resetItems(response));
   }
 
   public fetchItemById<T>(...args): PromiseLike<T> {
     return this.serviceToInject.fetchOne(...args)
-      .then((model) => this.addOrUpdateItem(model));
+      .then((model) => this.addOrUpdateItem(this.itemSelector(model)));
+  }
+
+  public queryItems<T>(...args): PromiseLike<T> {
+    return this.serviceToInject.query(...args)
+      .then((response) => this.resetItems(response));
   }
 
   @action.bound
@@ -37,16 +48,22 @@ export default class DomainStore<T> {
     this.__rawData__ = data;
 
     const newItems = {};
-    const select = (this.selectors.dataSelector ? this.selectors.dataSelector(data) : data);
+    const select = this.listSelector(data);
 
     select.forEach((model) => {
-      if (this.data.has(this.getModelIdentifier(model))) {
-        this.addOrUpdateItem(model);
-        newItems[this.getModelIdentifier(model)] = this.getItem(this.getModelIdentifier(model));
+      const identifier = this.getModelIdentifier(model);
+      if (!identifier) {
+        invariant(`Response contains invalid models. Identifier=${this.modelKey}, Response`, data, model);
         return;
       }
 
-      newItems[this.getModelIdentifier(model)] = deserialize(this.model, model);
+      if (this.data.has(identifier)) {
+        this.addOrUpdateItem(model);
+        newItems[identifier] = this.getItem(identifier);
+        return;
+      }
+
+      newItems[identifier] = deserialize(this.model, model);
     });
 
     this.__data__ = observable.map(newItems);
@@ -55,12 +72,17 @@ export default class DomainStore<T> {
 
   @action
   public addOrUpdateItem(model: {}): ObservableMap<{}> {
-    // TODO: dublicates logic with data selector
-    const adapted = this.selectors.modelNormalizer ? this.selectors.modelNormalizer(model) : model;
-    if (this.data.has(this.getModelIdentifier(adapted))) {
-      update(this.getItem(this.getModelIdentifier(adapted)), model);
+    const identifier = this.getModelIdentifier(model);
+
+    if (!identifier) {
+      invariant(`Response contains invalid models. Identifier=${this.modelKey}, Response`, model);
+      return;
+    }
+
+    if (this.data.has(this.getModelIdentifier(model))) {
+      update(this.getItem(this.getModelIdentifier(model)), model);
     } else {
-      this.data.set(this.getModelIdentifier(adapted), deserialize(this.model, adapted));
+      this.data.set(this.getModelIdentifier(model), deserialize(this.model, model));
     }
 
     return this.data;
@@ -75,8 +97,12 @@ export default class DomainStore<T> {
     return this.data.values();
   }
 
-  private getModelIdentifier(model: Object): string {
-    return model[this.modelKey].toString();
+  private getModelIdentifier(model: Object): string | null {
+    if (model[this.modelKey]) {
+      return model[this.modelKey].toString();
+    }
+
+    return null;
   }
 
   public get rawData(): any {
@@ -85,5 +111,13 @@ export default class DomainStore<T> {
 
   public get data(): ObservableMap<{}> {
     return this.__data__;
+  }
+
+  private itemSelector(response) {
+    return this.selectors.itemSelector ? this.selectors.itemSelector(response) : response;
+  }
+
+  private listSelector(response) {
+    return this.selectors.listSelector ? this.selectors.listSelector(response) : response;
   }
 }

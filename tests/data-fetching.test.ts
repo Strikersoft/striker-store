@@ -1,4 +1,4 @@
-import { createDomainStore } from '../lib/index';
+import { createDomainStore, DomainStoreConfig, DomainStore } from '../lib/index';
 import { MockUserModel, MockUserService, MockUserServiceErrored } from './utils';
 
 class MockCustomizedService extends MockUserService {
@@ -13,35 +13,65 @@ class MockCustomizedService extends MockUserService {
 }
 
 describe('createDomainStore - fetching data', () => {
-  let domainStore;
+  let domainStore: DomainStore;
+
   beforeEach(() => {
-    domainStore = createDomainStore({
+    const config: DomainStoreConfig = {
       name: 'users',
       serviceToInject: new MockUserService(),
       domainModel: MockUserModel
-    });
+    };
+
+    domainStore = createDomainStore(config).store;
   });
 
   it('can fetch data list', async () => {
-    const { store } = domainStore;
-    await store.fetchItems();
+    await domainStore.fetchItems();
 
-    expect(store.data.size).toBeGreaterThan(0);
+    expect(domainStore.data.size).toBeGreaterThan(0);
   });
 
   it('can fetch by id', async () => {
-    const { store } = domainStore;
-    await store.fetchItemById(MockUserService.getMockModel().id);
+    await domainStore.fetchItemById(MockUserService.getMockModel().id);
 
-    expect(store.data.size).toBeGreaterThan(0);
+    expect(domainStore.data.size).toBeGreaterThan(0);
+  });
+
+  it('can fetch query', async () => {
+    const service = new MockUserService();
+    const mock = jest.fn();
+    mock
+      .mockReturnValueOnce(Promise.resolve([{ id: 1, name: 'swag' }]))
+      .mockReturnValueOnce(Promise.resolve([{ id: 2, name: 'swag2' }, { id: 1, name: 'swag' }]));
+
+    service.query = mock;
+
+    const config: DomainStoreConfig = {
+      name: 'users',
+      serviceToInject: service,
+      domainModel: MockUserModel
+    };
+
+    const domainStore = createDomainStore(config).store;
+    await domainStore.queryItems({ page: 1 });
+
+    expect(domainStore.data.size).toEqual(1);
+    const model = domainStore.getItem(1);
+
+    await domainStore.queryItems({ page: 2 });
+
+    expect(domainStore.data.size).toEqual(2);
+    expect(domainStore.getItem(1)).toBe(model);
   });
 
   it('remove unsynced models', async () => {
-    const { store } = createDomainStore({
+    const config: DomainStoreConfig = {
       name: 'users',
       serviceToInject: new MockCustomizedService(),
       domainModel: MockUserModel
-    });
+    };
+
+    const { store } = createDomainStore(config);
 
     await store.fetchItemById(MockUserService.getMockModel().id);
     await store.fetchItems();
@@ -50,18 +80,19 @@ describe('createDomainStore - fetching data', () => {
   });
 
   it('throw backend error while fetching', async () => {
-    const { store } = createDomainStore({
+    const config: DomainStoreConfig = {
       name: 'users',
       serviceToInject: new MockUserServiceErrored(),
       domainModel: MockUserModel
-    });
+    };
+
+    const { store } = createDomainStore(config);
 
     try {
       await store.fetchItems();
+      fail('Store not errored');
     } catch (e) {
       expect(e).toEqual(MockUserServiceErrored.getMockError());
-      expect(store.data.size).toEqual(0);
     }
-
   });
 });

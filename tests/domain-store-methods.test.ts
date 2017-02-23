@@ -1,21 +1,22 @@
-import { createDomainStore } from '../lib/index';
+import { createDomainStore, DomainStoreConfig, DomainStore } from '../lib/index';
 import { MockUserModel, MockUserService } from './utils';
 import { isObservableArray, when } from 'mobx';
 
 describe('DomainStore - public methods', () => {
-  let domainStore;
+  let domainStore: DomainStore;
+
   beforeEach(() => {
-    domainStore = createDomainStore({
+    const config: DomainStoreConfig = {
       name: 'users',
       serviceToInject: new MockUserService(),
       domainModel: MockUserModel
-    });
+    };
+    domainStore = createDomainStore(config).store;
   });
 
   it('getItem should return particular model by id', async () => {
-    const { store } = domainStore;
-    await store.fetchItems();
+    await domainStore.fetchItems();
 
-    expect(store.getItem(MockUserService.getMockModel().id)).toEqual(MockUserService.getMockModel());
+    expect(domainStore.getItem(MockUserService.getMockModel().id)).toEqual(MockUserService.getMockModel());
   });
 });

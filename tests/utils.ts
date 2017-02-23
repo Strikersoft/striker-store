@@ -10,6 +10,10 @@ export class MockUserService implements DomainService {
     return Promise.resolve(MockUserService.getMockModel());
   }
 
+  query() {
+    return Promise.resolve([MockUserService.getMockModel()]);
+  }
+
   static getMockModel() {
     return { id: 1, name: 'swag'};
   }
@@ -22,6 +26,10 @@ export class MockUserServiceErrored implements DomainService {
 
   fetchOne() {
     return Promise.reject(MockUserServiceErrored.getMockError());
+  }
+
+  query() {
+    return Promise.resolve([MockUserService.getMockModel()]);
   }
 
   static getMockError() {

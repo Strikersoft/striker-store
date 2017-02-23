@@ -4,43 +4,48 @@ import { DomainService } from './domain-service';
 import { Selectors, NextRouterState } from './domain-selectors';
 import DomainStore from './domain-store';
 
-export interface DomainStoreConfig<T> {
+export interface DomainStoreConfig {
   name: string;
   serviceToInject: DomainService;
-  domainModel: ModelSchema<T> | (new () => T);
+  domainModel: ModelSchema<any> | (new () => any);
   modelKey?: string | number;
-  selectors?: Selectors<T>;
+  selectors?: Selectors;
+}
+
+export interface DomainStoreResponse {
+  store: DomainStore;
+  listResolver: (nextState: NextRouterState, replace, callback: () => void) => void;
+  itemResolver: (nextState: NextRouterState, replace, callback: () => void) => void;
 }
 
 export { DomainService };
 export { DomainStore };
 
-export function createDomainStore<T>(config: DomainStoreConfig<T>) {
-  const { name, serviceToInject, domainModel } = config;
-  const { paramsSelector = null, paramsItemSelector = null, dataSelector = null, modelNormalizer = null } = config.selectors || {};
+export function createDomainStore(config: DomainStoreConfig) {
 
-  const store = new DomainStore(name, serviceToInject, domainModel, config.selectors || {});
+  const store = new DomainStore(config.name, config.serviceToInject, config.domainModel, config.selectors);
+  const { selectors = {} } = config;
 
   function listResolver(nextState: NextRouterState, replace, callback: () => void) {
+    const fetch = store.fetchItems(selectors.paramsSelector ? selectors.paramsSelector(nextState) : []);
+
     if (store.data.size > 0) {
       callback();
-      store.fetchItems(paramsSelector ? paramsSelector(nextState) : []);
     } else {
-      store.fetchItems(paramsSelector ? paramsSelector(nextState) : []).then(() => { callback(); });
+      fetch.then(() => { callback(); });
     }
   }
 
   function itemResolver(nextState: NextRouterState, replace, callback: () => void) {
     const item = store.getItem(nextState.params.id);
+    const fetch = store.fetchItemById(selectors.paramsItemSelector ? selectors.paramsItemSelector(nextState) : nextState.params.id);
 
     if (item) {
       callback();
-      store.fetchItemById(paramsItemSelector ? paramsItemSelector(nextState) : nextState.params.id);
     } else {
-      store.fetchItemById(paramsItemSelector ? paramsItemSelector(nextState) : nextState.params.id)
-        .then(() => { callback(); });
+      fetch.then(() => { callback(); });
     }
   }
 
-  return { store, listResolver, itemResolver };
+  return { store, listResolver, itemResolver } as DomainStoreResponse;
 }

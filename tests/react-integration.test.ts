@@ -1,23 +1,28 @@
-import { createDomainStore } from '../lib/index';
+import { createDomainStore, DomainStoreConfig, DomainStore } from '../lib/index';
 import { MockUserModel, MockUserService } from './utils';
 import { isObservableArray, when } from 'mobx';
 
 describe('createDomainStore - observable data', () => {
-  let domainStore;
+  let domainStore: DomainStore;
+
   beforeEach(() => {
-    domainStore = createDomainStore({
+    const config: DomainStoreConfig = {
       name: 'users',
       serviceToInject: new MockUserService(),
       domainModel: MockUserModel
-    });
+    };
+
+    domainStore = createDomainStore(config).store;
   });
 
-  it('reacts on store changes', async () => {
-    const { store } = domainStore;
-    await store.fetchItems();
+  it('reacts on store changes', async (done) => {
+    await domainStore.fetchItems();
 
-    when(() => store.data.size > 0, () => expect(store.data.size).toBeGreaterThan(0));
+    when(() => domainStore.data.size > 0, () => {
+      expect(domainStore.data.size).toBeGreaterThan(0);
+      done();
+    });
 
-    await store.fetchItems();
+    await domainStore.fetchItems();
   });
 });
