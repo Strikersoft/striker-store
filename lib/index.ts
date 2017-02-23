@@ -18,12 +18,9 @@ export interface DomainStoreResponse {
   itemResolver: (nextState: NextRouterState, replace, callback: () => void) => void;
 }
 
-export { DomainService };
-export { DomainStore };
-
 export function createDomainStore(config: DomainStoreConfig) {
 
-  const store = new DomainStore(config.name, config.serviceToInject, config.domainModel, config.selectors);
+  const store = new DomainStore(config.name, config.serviceToInject, config.domainModel, config.selectors, config.modelKey);
   const { selectors = {} } = config;
 
   function listResolver(nextState: NextRouterState, replace, callback: () => void) {

@@ -19,7 +19,7 @@ export default class DomainStore {
     service: DomainService,
     domainModel: ModelSchema<any> | (new () => any),
     selectors: Selectors,
-    modelKey = 'id'
+    modelKey: string | number = 'id'
   ) {
     this.name = name;
     this.serviceToInject = service;
