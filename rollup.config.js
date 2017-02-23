@@ -18,7 +18,7 @@ export default {
         typescript: require('typescript'),
         target: isESType ? 'es6' : 'es5'
     }),
-    isESType ? babili() : uglify()
+    // isESType ? babili() : uglify()
   ],
   external: ['mobx', 'serializr']
 }
