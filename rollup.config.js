@@ -1,6 +1,4 @@
 import typescript from 'rollup-plugin-typescript';
-import babili from 'rollup-plugin-babili';
-import uglify from 'rollup-plugin-uglify';
 
 const isESType = process.env.BUILD_TYPE === 'es';
 
@@ -10,7 +8,7 @@ export default {
   format: `${process.env.BUILD_TYPE}`,
   moduleName: 'strikerStore',
   moduleId: 'striker-store',
-  footer: '/* Coded with love in Strikersoft */',
+  footer: '/* Coded with love at Strikersoft */',
   sourceMap: true,
 
   plugins: [
@@ -18,7 +16,6 @@ export default {
         typescript: require('typescript'),
         target: isESType ? 'es6' : 'es5'
     }),
-    // isESType ? babili() : uglify()
   ],
   external: ['mobx', 'serializr']
 }

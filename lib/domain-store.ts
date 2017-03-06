@@ -28,18 +28,27 @@ export default class DomainStore {
   }
 
   public fetchItems<T>(...args): PromiseLike<T> {
-    return this.serviceToInject.fetch(...args)
-      .then((response) => this.resetItems(response));
+    return new Promise((resolve, reject) => {
+      return this.serviceToInject.fetch(...args)
+        .then((response) => this.resetItems(response))
+        .then(resolve, reject);
+    });
   }
 
   public fetchItemById<T>(...args): PromiseLike<T> {
-    return this.serviceToInject.fetchOne(...args)
-      .then((model) => this.addOrUpdateItem(this.itemSelector(model)));
+    return new Promise((resolve, reject) => {
+      return this.serviceToInject.fetchOne(...args)
+        .then((model) => this.addOrUpdateItem(this.itemSelector(model)))
+        .then(resolve, reject);
+    });
   }
 
   public queryItems<T>(...args): PromiseLike<T> {
-    return this.serviceToInject.query(...args)
-      .then((response) => this.resetItems(response));
+    return new Promise((resolve, reject) => {
+      return this.serviceToInject.query(...args)
+        .then((response) => this.resetItems(response))
+        .then(resolve, reject);
+    });
   }
 
   @action.bound
