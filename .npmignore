@@ -2,6 +2,6 @@
 .DS_Store
 .fusebox
 node_modules
-*.ts
+lib/*.ts
 coverage
-tests
+tests/*.ts
