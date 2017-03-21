@@ -1,5 +1,21 @@
-import { action, computed } from 'mobx';
+import { action, computed, observable } from 'mobx';
 import { deserialize, update, getDefaultModelSchema } from 'serializr';
+
+
+const registeredModelHooks = {};
+
+// TODO: thinks about model names (mb store pointers instead of names ?)
+function getModelName(model) {
+  return model.constructor.modelName || model.constructor.name;
+}
+
+export function registerModelHooks(model, hook, name) {
+  registeredModelHooks[getModelName(model)] = {
+    [hook]: name,
+    ...registeredModelHooks[getModelName(model)]
+  };
+}
+
 
 export class SchemaAdapter {
   constructor(schema) {
@@ -10,6 +26,17 @@ export class SchemaAdapter {
   deserialize = (payload) => {
     const modelSchema = this.getModelSchema();
     const model = deserialize(this.schema, payload);
+
+    const loadingHookProp = this.getLoadingHookProp(model);
+    const errorHookProp = this.getErrorHookProp(model);
+
+    if (loadingHookProp) {
+      model[loadingHookProp] = observable.box(false);
+    }
+
+    if (errorHookProp) {
+      model[errorHookProp] = observable.box(false);
+    }
 
     if (!this.modelIdentifier) {
       throw new Error(`Can't deserialize without identifier() in schema.`);
@@ -45,6 +72,18 @@ export class SchemaAdapter {
   @action('desrialize array of payload models')
   deserializeArray(payload) {
     return payload.map(this.deserialize);
+  }
+
+  getLoadingHookProp(model) {
+    if (registeredModelHooks[getModelName(model)]) {
+      return registeredModelHooks[getModelName(model)].isLoading;
+    }
+  }
+
+  getErrorHookProp(model) {
+    if (registeredModelHooks[getModelName(model)]) {
+      return registeredModelHooks[getModelName(model)].isError;
+    }
   }
 
   getModelSchema(model) {

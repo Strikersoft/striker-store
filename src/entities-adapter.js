@@ -14,9 +14,9 @@ export class EntitiesAdapter {
 
     models.forEach((model) => {
       const id = model[identifier];
-      const item = this.entities.get(id);
+      const item = this.get(id);
 
-      if (this.entities.has(id)) {
+      if (this.has(id)) {
         this.schema.update(item, model);
         newEntities[id] = item;
       } else {
@@ -27,12 +27,29 @@ export class EntitiesAdapter {
     this.entities.replace(newEntities);
   }
 
+  addOrUpdate(model) {
+    const identifier = this.schema.modelIdentifier;
+    const id = model[identifier];
+    const item = this.get(id);
+
+    if (this.has(id)) {
+      this.schema.update(item, model);
+      this.entities.set(id, item);
+    } else {
+      this.entities.set(id, this.schema.deserialize(model));
+    }
+  }
+
+  has(id) {
+    return this.entities.has(id);
+  }
+
   @action
-  getItem(id) {
+  get(id) {
     return this.entities.get(id);
   }
 
-  @computed get array() {
+  get array() {
     return this.entities.values();
   }
 }

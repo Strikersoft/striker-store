@@ -5,7 +5,8 @@ import DevTools, { setUpdatesEnabled } from 'mobx-react-devtools';
 
 setUpdatesEnabled(true);
 
-import { SimplestDemo } from './demo-containers/simplest';
+import { FetchingBasicExample } from './demo-containers/fetching-basic';
+import { FetchingAdvancedExample } from './demo-containers/fetching-advanced';
 
 class DemoApp extends Component {
   render() {
@@ -15,7 +16,10 @@ class DemoApp extends Component {
         <DevTools />
 
         <div>
-          <SimplestDemo />
+          <FetchingBasicExample />
+        </div>
+        <div>
+          <FetchingAdvancedExample />
         </div>
       </div>
     );

@@ -1,16 +1,6 @@
 import { BaseDomainStore } from '../../../src';
 import { serializable, identifier } from 'serializr';
 
-const users = [
-  { id: 1, name: 'User 1' },
-  { id: 2, name: 'User 2' }
-];
-
-const user = {
-  id: 3,
-  name: 'User 3'
-}
-
 class ExampleUserModel {
   @serializable(identifier()) id;
   @serializable name;
@@ -18,13 +8,13 @@ class ExampleUserModel {
 
 class ExampleUserService {
   fetchAll() {
-    // Mock users endpoint
-    return Promise.resolve(users);
+    return fetch('https://jsonplaceholder.typicode.com/users')
+      .then(response => response.json());
   }
 
-  fetchOne() {
-    // Mock user endpoint
-    return Promise.resolve(user);
+  fetchOne(id) {
+    return fetch(`https://jsonplaceholder.typicode.com/users/${id}`)
+      .then(response => response.json());
   }
 }
 
