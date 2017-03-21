@@ -2,9 +2,30 @@ import { observable, runInAction, computed } from 'mobx';
 
 import { EntitiesAdapter } from './entities-adapter';
 import { ServiceAdapter } from './service-adapter';
-import { SchemaAdapter } from './schema-adapter';
+import { SchemaAdapter, registerModelHooks } from './schema-adapter';
 import { Logger } from './logger';
 
+
+// TODO: rethink decorators. now logic is too complicated
+function createDecoratedProp(model, prop) {
+  Object.defineProperty(model, prop, {
+    configurable: true,
+    writable: true,
+    enumerable: false
+  });
+}
+
+export function loadingState(model, prop) {
+  createDecoratedProp(model, prop);
+  registerModelHooks(model, 'isLoading', prop);
+  return model;
+}
+
+export function errorState(model, prop) {
+  createDecoratedProp(model, prop);
+  registerModelHooks(model, 'isError', prop);
+  return model;
+}
 
 class LifecycleHooks {
   constructor(ref, registeredStores) {
@@ -24,7 +45,7 @@ class LifecycleHooks {
     return sliced;
   }
 
-  triggerDidFetchOne() {
+  triggerDidFetchOne(data) {
     if (!this.ref.storeDidFetchOne) {
       throw new Error('no required LifecycleHook - storeDidFetchOne');
     }
@@ -83,6 +104,7 @@ export class BaseDomainStore {
   logger = new Logger(BaseDomainStore.name);
 
   @observable isProcessing = false;
+  @observable didFetchedOnce = false;
 
   constructor() {
     this.service = new ServiceAdapter(this.constructor.service);
@@ -116,6 +138,7 @@ export class BaseDomainStore {
       runInAction(() => {
         this.data.reset(slicedData);
         this.isProcessing = false;
+        this.didFetchedOnce = true;
       });
     } catch (e) {
       this.logger.error(e);
@@ -124,27 +147,60 @@ export class BaseDomainStore {
     }
   }
 
-  async fetchOne(...args) {
+  async fetchOne(id, ...args) {
     this.isProcessing = true;
+    // TODO: thinks about separate adapter
+    if (this.data.has(id)) {
+      const model = this.data.get(id);
+      const loadingHookProp = this.schema.getLoadingHookProp(model);
+      const errorHookProp = this.schema.getErrorHookProp(model);
+
+      if (loadingHookProp) {
+        model[loadingHookProp].set(true);
+      }
+
+      if (errorHookProp) {
+        model[errorHookProp].set(false);
+      }
+    }
 
     try {
       this.hooks.triggerWillFetchOne();
 
-      const response = await this.service.fetchAll(...args);
+      const response = await this.service.fetchOne(id, ...args);
       const slicedData = await this.hooks.triggerDidFetchOne(response);
 
       if (Array.isArray(slicedData)) {
-        throw new Error('DidFetchAll return an array');
+        throw new Error('DidFetchOne return an array');
       }
 
       runInAction(() => {
-        this.data.reset([slicedData]);
+        this.data.addOrUpdate(slicedData);
         this.isProcessing = false;
+        this.didFetchedOnce = true;
       });
     } catch (e) {
       this.logger.error(e);
+
+      if (this.data.has(id)) {
+        const model = this.data.get(id);
+        const errorHookProp = this.schema.getErrorHookProp(model);
+
+        if (errorHookProp) {
+          model[errorHookProp].set(true);
+        }
+      }
       this.hooks.triggerFetchOneFailed(e);
+
       throw new Error(e);
+    } finally {
+      // TODO: dry ?
+      const model = this.data.get(id);
+      const loadingHookProp = this.schema.getLoadingHookProp(model);
+
+      if (loadingHookProp) {
+        model[loadingHookProp].set(false);
+      }
     }
   }
 
@@ -153,18 +209,18 @@ export class BaseDomainStore {
   }
 
   getOne = (id) => {
-    return this.data.getItem(id);
+    return this.data.get(id);
   }
 
   get isBusy() {
     return this.isProcessing;
   }
 
-  get asArray() {
+  @computed get asArray() {
     return this.data.array;
   }
 
   get storeName() {
-    return this.constructor.name;
+    return this.constructor.storeName || this.constructor.name;
   }
 }
