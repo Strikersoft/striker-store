@@ -2,9 +2,8 @@ import React, { Component, PropTypes } from 'react';
 import { observer } from 'mobx-react';
 
 import FetchingAdvanceStore from '../demo-stores/fetching-advanced';
-
-const LoadingIndicator = observer(({ indicator }) => indicator.get() ? <span>'(Loading...)'</span> : null);
-const ErrorIndicator = observer(({ indicator }) => indicator.get() ? <span>(Error occured)</span> : null);
+import FetchButton from '../demo-components/fetch-button';
+import { LoadingIndicator, ErrorIndicator } from '../demo-components/indicators';
 
 @observer
 class UserItem extends Component {
@@ -17,8 +16,6 @@ class UserItem extends Component {
   };
 
   render() {
-
-    console.log(this.props.user);
     return (
       <div>
         {this.props.user.name}
@@ -55,7 +52,6 @@ class UserList extends Component {
   }
 }
 
-@observer
 export class FetchingAdvancedExample extends Component {
   fetch = () => {
     FetchingAdvanceStore.fetchAll();
@@ -66,10 +62,9 @@ export class FetchingAdvancedExample extends Component {
       <div>
         <h2>Fetching (advanced)</h2>
         <p>Includes: loading states, error states, refetching model by id, custom response mapping</p>
+
         <UserList store={FetchingAdvanceStore} />
-        <button onClick={this.fetch}>
-          {FetchingAdvanceStore.didFetchedOnce ? 'Refetch all' : 'Fetch initially'}
-        </button>
+        <FetchButton onClick={this.fetch} isEmpty={FetchingAdvanceStore.isEmpty} />
       </div>
     );
   }
