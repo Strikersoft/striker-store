@@ -1,4 +1,5 @@
-import { observable, runInAction, computed } from 'mobx';
+import { observable, runInAction, action, computed } from 'mobx';
+import { createViewModel } from 'mobx-utils';
 
 import { EntitiesAdapter } from './entities-adapter';
 import { ServiceAdapter } from './service-adapter';
@@ -13,6 +14,19 @@ function createDecoratedProp(model, prop) {
     writable: true,
     enumerable: false
   });
+}
+
+export class ViewModel {
+  reusedViewModel;
+
+  get viewModel() {
+    if (!this.reusedViewModel) {
+      this.reusedViewModel = createViewModel(this);
+      return this.reusedViewModel;
+    }
+
+    return this.reusedViewModel;
+  }
 }
 
 export function loadingState(model, prop) {
@@ -104,7 +118,7 @@ export class BaseDomainStore {
   logger = new Logger(BaseDomainStore.name);
 
   @observable isProcessing = false;
-  @observable didFetchedOnce = false;
+  isEmpty = observable.box(true);
 
   constructor() {
     this.service = new ServiceAdapter(this.constructor.service);
@@ -120,6 +134,10 @@ export class BaseDomainStore {
 
   storeDidFetchOne({ response }) {
     return response;
+  }
+
+  createEmpty() {
+    return this.schema.createEmpty();
   }
 
   async fetchAll(...args) {
@@ -138,7 +156,7 @@ export class BaseDomainStore {
       runInAction(() => {
         this.data.reset(slicedData);
         this.isProcessing = false;
-        this.didFetchedOnce = true;
+        this.isEmpty.set(false);
       });
     } catch (e) {
       this.logger.error(e);
@@ -177,8 +195,10 @@ export class BaseDomainStore {
       runInAction(() => {
         this.data.addOrUpdate(slicedData);
         this.isProcessing = false;
-        this.didFetchedOnce = true;
+        this.isEmpty.set(false);
       });
+
+      return this.getOne(id);
     } catch (e) {
       this.logger.error(e);
 
@@ -211,6 +231,10 @@ export class BaseDomainStore {
   getOne = (id) => {
     return this.data.get(id);
   }
+
+  has = (id) => {
+    return this.data.has(id);
+  };
 
   get isBusy() {
     return this.isProcessing;

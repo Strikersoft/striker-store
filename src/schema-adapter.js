@@ -69,6 +69,10 @@ export class SchemaAdapter {
     return idx;
   }
 
+  createEmpty() {
+    return this.deserialize({ [this.modelIdentifier]: false });
+  }
+
   @action('desrialize array of payload models')
   deserializeArray(payload) {
     return payload.map(this.deserialize);

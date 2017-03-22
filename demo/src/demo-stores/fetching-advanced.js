@@ -11,15 +11,8 @@ class ExampleAdvancedUserModel {
 
 class ExampleUserService {
   fetchAll() {
-    if (this.emulateFail) {
-      this.emulateFail = false;
-      return Promise.reject('ERROR FETCH ALL');
-    }
     return fetch('https://jsonplaceholder.typicode.com/users')
-      .then(response => {
-        this.emulateFail = true;
-        return response.json();
-      });
+      .then(response => response.json());
   }
 
   fetchOne(id) {
