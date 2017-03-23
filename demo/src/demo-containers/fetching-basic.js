@@ -2,6 +2,7 @@ import React, { Component, PropTypes } from 'react';
 import { observer } from 'mobx-react';
 
 import FetchingBasicStore from '../demo-stores/fetching-basic';
+import FetchButton from '../demo-components/fetch-button';
 
 @observer
 class UserItem extends Component {
@@ -37,7 +38,7 @@ class UserList extends Component {
 
 @observer
 export class FetchingBasicExample extends Component {
-  onFetch = () => {
+  fetch = () => {
     FetchingBasicStore.fetchAll();
   };
 
@@ -46,9 +47,7 @@ export class FetchingBasicExample extends Component {
       <div>
         <h2>Fetching (basic)</h2>
         <UserList store={FetchingBasicStore} />
-        <button onClick={this.onFetch}>
-          {FetchingBasicStore.didFetchedOnce ? 'Refetch all' : 'Fetch initially'}
-        </button>
+        <FetchButton onClick={this.fetch} isEmpty={FetchingBasicStore.isEmpty} />
       </div>
     );
   }
