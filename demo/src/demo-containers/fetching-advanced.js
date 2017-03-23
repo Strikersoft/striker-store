@@ -19,7 +19,7 @@ class UserItem extends Component {
     return (
       <div>
         {this.props.user.name}
-        <LoadingIndicator indicator={this.props.user.isLoading} />
+        <LoadingIndicator indicator={this.props.user.isReloading} />
         <ErrorIndicator indicator={this.props.user.isError} />
         <button onClick={this.onRefetch}>Refetch {this.props.user.id}</button>
       </div>

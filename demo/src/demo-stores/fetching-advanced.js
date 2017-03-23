@@ -1,11 +1,11 @@
-import { BaseDomainStore, loadingState, errorState } from '../../../src';
+import { BaseDomainStore, reloadingState, errorState } from '../../../src';
 import { serializable, identifier } from 'serializr';
 
 class ExampleAdvancedUserModel {
   @serializable(identifier()) id;
   @serializable name;
 
-  @loadingState isLoading;
+  @reloadingState isReloading;
   @errorState isError;
 }
 
