@@ -8,7 +8,11 @@ module.exports = {
     umd: {
       global: 'striker-store',
       externals: {
-        react: 'React'
+        react: 'React',
+        mobx: 'mobx',
+        'mobx-react': 'mobx-react',
+        'mobx-utils': 'mobx-utils',
+        serializr: 'serializr'
       }
     }
   }

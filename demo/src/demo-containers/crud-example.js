@@ -77,7 +77,6 @@ export class CrudExample extends Component {
           <Route path="/examples/crud/users" render={({ match }) => (
             <FetchAll
               store={CrudExampleStore}
-              id={match.params.id}
               onlyOnInit={true}
               whenLoading={<div>list is loading</div>}
               whenFulfilled={({ data, isReloading }) => <UserList users={data} isReloading={isReloading} />}
