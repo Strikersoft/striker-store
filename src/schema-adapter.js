@@ -27,7 +27,7 @@ export class SchemaAdapter {
     const modelSchema = this.getModelSchema();
     const model = deserialize(this.schema, payload);
 
-    const loadingHookProp = this.getLoadingHookProp(model);
+    const loadingHookProp = this.getReloadingHookProp(model);
     const errorHookProp = this.getErrorHookProp(model);
 
     if (loadingHookProp) {
@@ -78,9 +78,9 @@ export class SchemaAdapter {
     return payload.map(this.deserialize);
   }
 
-  getLoadingHookProp(model) {
+  getReloadingHookProp(model) {
     if (registeredModelHooks[getModelName(model)]) {
-      return registeredModelHooks[getModelName(model)].isLoading;
+      return registeredModelHooks[getModelName(model)].isReloading;
     }
   }
 

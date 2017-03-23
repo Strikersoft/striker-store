@@ -29,9 +29,9 @@ export class ViewModel {
   }
 }
 
-export function loadingState(model, prop) {
+export function reloadingState(model, prop) {
   createDecoratedProp(model, prop);
-  registerModelHooks(model, 'isLoading', prop);
+  registerModelHooks(model, 'isReloading', prop);
   return model;
 }
 
@@ -118,6 +118,7 @@ export class BaseDomainStore {
   logger = new Logger(BaseDomainStore.name);
 
   @observable isProcessing = false;
+  @observable isListLoading = observable.box(false);
   isEmpty = observable.box(true);
 
   constructor() {
@@ -136,12 +137,9 @@ export class BaseDomainStore {
     return response;
   }
 
-  createEmpty() {
-    return this.schema.createEmpty();
-  }
-
   async fetchAll(...args) {
     this.isProcessing = true;
+    this.isListLoading.set(true);
 
     try {
       this.hooks.triggerWillFetchAll();
@@ -157,10 +155,14 @@ export class BaseDomainStore {
         this.data.reset(slicedData);
         this.isProcessing = false;
         this.isEmpty.set(false);
+        this.isListLoading.set(false);
       });
+
+      return this.asArray;
     } catch (e) {
       this.logger.error(e);
       this.hooks.triggerFetchAllFailed(e);
+      this.isListLoading.set(false);
       throw new Error(e);
     }
   }
@@ -170,11 +172,11 @@ export class BaseDomainStore {
     // TODO: thinks about separate adapter
     if (this.data.has(id)) {
       const model = this.data.get(id);
-      const loadingHookProp = this.schema.getLoadingHookProp(model);
+      const reloadingHookProp = this.schema.getReloadingHookProp(model);
       const errorHookProp = this.schema.getErrorHookProp(model);
 
-      if (loadingHookProp) {
-        model[loadingHookProp].set(true);
+      if (reloadingHookProp) {
+        model[reloadingHookProp].set(true);
       }
 
       if (errorHookProp) {
@@ -216,12 +218,16 @@ export class BaseDomainStore {
     } finally {
       // TODO: dry ?
       const model = this.data.get(id);
-      const loadingHookProp = this.schema.getLoadingHookProp(model);
+      const reloadingHookProp = this.schema.getReloadingHookProp(model);
 
-      if (loadingHookProp) {
-        model[loadingHookProp].set(false);
+      if (reloadingHookProp) {
+        model[reloadingHookProp].set(false);
       }
     }
+  }
+
+  @computed get asArray() {
+    return this.data.array;
   }
 
   getMap = () => {
@@ -238,10 +244,6 @@ export class BaseDomainStore {
 
   get isBusy() {
     return this.isProcessing;
-  }
-
-  @computed get asArray() {
-    return this.data.array;
   }
 
   get storeName() {
