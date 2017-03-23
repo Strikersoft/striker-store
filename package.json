@@ -1,6 +1,6 @@
 {
   "name": "striker-store",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "striker-store React component",
   "main": "lib/index.js",
   "module": "es/index.js",
