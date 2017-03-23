@@ -1,16 +1,41 @@
 # striker-store
 
-[![Travis][build-badge]][build]
-[![npm package][npm-badge]][npm]
-[![Coveralls][coveralls-badge]][coveralls]
+[![Travis](https://travis-ci.org/Strikersoft/striker-store.svg?branch=master)][https://travis-ci.org/Strikersoft/striker-store.svg?branch=master]
+[![npm package](https://img.shields.io/npm/v/striker-store.png?style=flat-square)][https://img.shields.io/npm/v/striker-store.png?style=flat-square]
+[![Coverage Status](https://coveralls.io/repos/github/Strikersoft/striker-store/badge.svg?branch=master)](https://coveralls.io/github/Strikersoft/striker-store?branch=master)
 
-Describe striker-store here.
+> Like ember-data but for mobx and react
 
-[build-badge]: https://img.shields.io/travis/user/repo/master.png?style=flat-square
-[build]: https://travis-ci.org/user/repo
+* * *
+## Table of Contents		
+ 		 
+- [Install](#install)
+- [Usage](#usage)
+- [Examples & Demos](#examples--demos)		
+- [API](#api)
+- [Contribute](#contribute)
+- [License](#license)
+* * *
 
-[npm-badge]: https://img.shields.io/npm/v/npm-package.png?style=flat-square
-[npm]: https://www.npmjs.org/package/npm-package
+## Install
+- This project uses [node](http://nodejs.org) and [npm](https://npmjs.com). Go check them out if you don't have them locally installed.
 
-[coveralls-badge]: https://img.shields.io/coveralls/user/repo/master.png?style=flat-square
-[coveralls]: https://coveralls.io/github/user/repo
+*tl;dr*
+```
+yarn add mobx mobx-react mobx-utils serializr striker-store
+```
+
+### Why all those libraries ?
+striker-strore is build on mobx stack, and our peer dependencies are `mobx mobx-react mobx-utils serializr`.
+
+## Usage
+TODO (but you can check our demo folder in source code)
+
+## API
+TODO (but you can check our demo folder in source code)
+
+## Contribute
+We are welcome to contribute. Just raise a pull request.
+
+## License
+[MIT License](LICENSE.md) © [Ostap Chervak](https://twitter.com/chervakostap)
