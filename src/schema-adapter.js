@@ -1,45 +1,23 @@
-import { action, computed, observable } from 'mobx';
+import { action, computed } from 'mobx';
 import { deserialize, update, getDefaultModelSchema } from 'serializr';
+import DomainModel from './domain-model';
 
-
-const registeredModelHooks = {};
-
-// TODO: thinks about model names (mb store pointers instead of names ?)
-function getModelName(model) {
-  return model.constructor.modelName || model.constructor.name;
-}
-
-export function registerModelHooks(model, hook, name) {
-  registeredModelHooks[getModelName(model)] = {
-    [hook]: name,
-    ...registeredModelHooks[getModelName(model)]
-  };
-}
-
-
-export class SchemaAdapter {
-  constructor(schema) {
+export default class SchemaAdapter {
+  constructor(schema, store) {
     this.schema = schema;
+    this.store = store;
   }
 
   @action('deserialize payload of model')
   deserialize = (payload) => {
-    const modelSchema = this.getModelSchema();
     const model = deserialize(this.schema, payload);
 
-    const loadingHookProp = this.getReloadingHookProp(model);
-    const errorHookProp = this.getErrorHookProp(model);
-
-    if (loadingHookProp) {
-      model[loadingHookProp] = observable.box(false);
-    }
-
-    if (errorHookProp) {
-      model[errorHookProp] = observable.box(false);
-    }
-
     if (!this.modelIdentifier) {
-      throw new Error(`Can't deserialize without identifier() in schema.`);
+      throw new Error('Can\'t deserialize without identifier() in schema.');
+    }
+
+    if (model instanceof DomainModel) {
+      model.reload = () => this.store.fetchOne(model[this.modelIdentifier]);
     }
 
     return model;
@@ -56,10 +34,9 @@ export class SchemaAdapter {
     const modelSchema = getDefaultModelSchema(this.schema);
     let idx = null;
 
-    // TODO: ponyffil required
     Object.keys(modelSchema.props).some((key) => {
       if (modelSchema.props[key].identifier) {
-        idx = key
+        idx = key;
         return true;
       }
 
@@ -76,18 +53,6 @@ export class SchemaAdapter {
   @action('desrialize array of payload models')
   deserializeArray(payload) {
     return payload.map(this.deserialize);
-  }
-
-  getReloadingHookProp(model) {
-    if (registeredModelHooks[getModelName(model)]) {
-      return registeredModelHooks[getModelName(model)].isReloading;
-    }
-  }
-
-  getErrorHookProp(model) {
-    if (registeredModelHooks[getModelName(model)]) {
-      return registeredModelHooks[getModelName(model)].isError;
-    }
   }
 
   getModelSchema(model) {

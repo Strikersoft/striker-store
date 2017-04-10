@@ -1,38 +1,24 @@
-import React, { Component, PropTypes } from 'react';
+import React from 'react';
+import { shape, func, string } from 'prop-types';
 import { observer } from 'mobx-react';
 
-@observer
-export class LoadingIndicator extends Component {
-  static propTypes = {
-    indicator: PropTypes.shape({
-      get: PropTypes.func.isRequired  // mobx boxed values: https://mobx.js.org/refguide/boxed.html
-    }).isRequired
+const IndicatorComponent = observer(({ indicator, type }) => {
+  if (indicator.get()) {
+    return <span>({type})</span>;
   }
-  render() {
-    const { indicator } = this.props;
 
-    if (indicator.get()) {
-      return <span>(Loading...)</span>;
-    }
+  return null;
+});
 
-    return null;
-  }
-}
+IndicatorComponent.propTypes = {
+  indicator: shape({ get: func }).isRequired,
+  type: string
+};
 
-@observer
-export class ErrorIndicator extends Component {
-  static propTypes = {
-    indicator: PropTypes.shape({
-      get: PropTypes.func.isRequired  // mobx boxed values: https://mobx.js.org/refguide/boxed.html
-    }).isRequired
-  }
-  render() {
-    const { indicator } = this.props;
+IndicatorComponent.defaultProps = {
+  type: 'Loading'
+};
 
-    if (indicator.get()) {
-      return <span>(ERROR)</span>;
-    }
+IndicatorComponent.displayName = 'StatusIndicator';
 
-    return null;
-  }
-}
+export default IndicatorComponent;

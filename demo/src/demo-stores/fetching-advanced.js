@@ -1,12 +1,9 @@
-import { BaseDomainStore, reloadingState, errorState } from '../../../src';
 import { serializable, identifier } from 'serializr';
+import { BaseDomainStore, DomainModel } from '../../../src';
 
-class ExampleAdvancedUserModel {
+class ExampleAdvancedUserModel extends DomainModel {
   @serializable(identifier()) id;
   @serializable name;
-
-  @reloadingState isReloading;
-  @errorState isError;
 }
 
 class ExampleUserService {
@@ -22,10 +19,10 @@ class ExampleUserService {
       return Promise.reject('ERROR FETCH ONE');
     }
     return fetch(`https://jsonplaceholder.typicode.com/users/${id}`)
-      .then(response => {
+      .then((response) => {
         this.emulateFail = true;
         return response.json();
-      })
+      });
   }
 }
 

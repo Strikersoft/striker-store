@@ -1,5 +1,5 @@
-import { BaseDomainStore } from '../../../src';
 import { serializable, identifier } from 'serializr';
+import { BaseDomainStore } from '../../../src';
 
 class ExampleUserModel {
   @serializable(identifier()) id;
