@@ -1,110 +1,18 @@
-import { observable, runInAction, action, computed } from 'mobx';
-import { createViewModel } from 'mobx-utils';
+import { observable, runInAction, computed } from 'mobx';
 
-import { EntitiesAdapter } from './entities-adapter';
-import { ServiceAdapter } from './service-adapter';
-import { SchemaAdapter, registerModelHooks } from './schema-adapter';
-import { Logger } from './logger';
-
-
-// TODO: rethink decorators. now logic is too complicated
-function createDecoratedProp(model, prop) {
-  Object.defineProperty(model, prop, {
-    configurable: true,
-    writable: true,
-    enumerable: false
-  });
-}
-
-export class ViewModel {
-  reusedViewModel;
-
-  get viewModel() {
-    if (!this.reusedViewModel) {
-      this.reusedViewModel = createViewModel(this);
-      return this.reusedViewModel;
-    }
-
-    return this.reusedViewModel;
-  }
-}
-
-export function reloadingState(model, prop) {
-  createDecoratedProp(model, prop);
-  registerModelHooks(model, 'isReloading', prop);
-  return model;
-}
-
-export function errorState(model, prop) {
-  createDecoratedProp(model, prop);
-  registerModelHooks(model, 'isError', prop);
-  return model;
-}
-
-class LifecycleHooks {
-  constructor(ref, registeredStores) {
-    this.logger = new Logger(LifecycleHooks.name);
-    this.ref = ref;
-    this.registeredStores = registeredStores;
-  }
-
-  triggerDidFetchAll(data) {
-    if (!this.ref.storeDidFetchAll) {
-      throw new Error('no required LifecycleHook - storeDidFetchAll');
-    }
-
-    const sliced = this.ref.storeDidFetchAll({ response: data, stores: this.registeredStores });
-    this.logger.debug('Hook storeDidFetchAll triggered', sliced);
-
-    return sliced;
-  }
-
-  triggerDidFetchOne(data) {
-    if (!this.ref.storeDidFetchOne) {
-      throw new Error('no required LifecycleHook - storeDidFetchOne');
-    }
-
-    const sliced = this.ref.storeDidFetchOne({ response: data, stores: this.registeredStores });
-    this.logger.debug('Hook storeDidFetchOne triggered', sliced);
-
-    return sliced;
-  }
-
-  triggerFetchAllFailed(error) {
-    if (this.ref.storeFetchAllFailed) {
-      this.ref.storeFetchAllFailed(error);
-      this.logger.debug('Hook storeFetchAllFailed triggered', error);
-    }
-  }
-
-  triggerFetchOneFailed(error) {
-    if (this.ref.storeFetchOneFailed) {
-      this.ref.storeFetchOneFailed(error);
-      this.logger.debug('Hook storeFetchOneFailed triggered', error);
-    }
-  }
-
-  triggerWillFetchAll() {
-    if (this.ref.storeWillFetchAll) {
-      this.ref.storeWillFetchAll();
-      this.logger.debug('Hook storeWillFetchAll triggered');
-    }
-  }
-
-  triggerWillFetchOne() {
-    if (this.ref.storeWillFetchOne) {
-      this.ref.storeWillFetchOne();
-      this.logger.debug('Hook storeWillFetchAll triggered');
-    }
-  }
-}
+import EntitiesAdapter from './entities-adapter';
+import ServiceAdapter from './service-adapter';
+import SchemaAdapter from './schema-adapter';
+import DomainModel from './domain-model';
+import LifecycleHooks from './lifecycle-hooks';
+import Logger from './logger';
 
 const registeredStores = {};
 
-export function resolveStore(storeName) {
+function resolveStore(storeName) {
   const store = registeredStores[storeName];
 
-  this.logger.warn(`Resolve store is experimental thing and can be changed in future`);
+  this.logger.warn('Resolve store is experimental thing and can be changed in future');
 
   if (!store) {
     this.logger.warn(`Can't find store with name "${storeName}"`);
@@ -113,17 +21,17 @@ export function resolveStore(storeName) {
   return store;
 }
 
-export class BaseDomainStore {
+class BaseDomainStore {
   hooks = new LifecycleHooks(this, registeredStores);
   logger = new Logger(BaseDomainStore.name);
 
-  @observable isProcessing = false;
-  @observable isListLoading = observable.box(false);
+  isProcessing = observable.box(false);
+  isListLoading = observable.box(false);
   isEmpty = observable.box(true);
 
   constructor() {
     this.service = new ServiceAdapter(this.constructor.service);
-    this.schema = new SchemaAdapter(this.constructor.modelSchema);
+    this.schema = new SchemaAdapter(this.constructor.modelSchema, this);
     this.data = new EntitiesAdapter(this.schema);
 
     registeredStores[this.storeName] = this;
@@ -137,8 +45,12 @@ export class BaseDomainStore {
     return response;
   }
 
+  storeDidCreateNew({ response }) {
+    return response;
+  }
+
   async fetchAll(...args) {
-    this.isProcessing = true;
+    this.isProcessing.set(true);
     this.isListLoading.set(true);
 
     try {
@@ -153,7 +65,7 @@ export class BaseDomainStore {
 
       runInAction(() => {
         this.data.reset(slicedData);
-        this.isProcessing = false;
+        this.isProcessing.set(false);
         this.isEmpty.set(false);
         this.isListLoading.set(false);
       });
@@ -163,24 +75,25 @@ export class BaseDomainStore {
       this.logger.error(e);
       this.hooks.triggerFetchAllFailed(e);
       this.isListLoading.set(false);
+      this.isProcessing.set(false);
       throw new Error(e);
     }
   }
 
   async fetchOne(id, ...args) {
-    this.isProcessing = true;
+    this.isProcessing.set(true);
     // TODO: thinks about separate adapter
     if (this.data.has(id)) {
       const model = this.data.get(id);
-      const reloadingHookProp = this.schema.getReloadingHookProp(model);
-      const errorHookProp = this.schema.getErrorHookProp(model);
 
-      if (reloadingHookProp) {
-        model[reloadingHookProp].set(true);
+      // TODO: more strict check
+      if (model.isReloading) {
+        model.isReloading.set(true);
       }
 
-      if (errorHookProp) {
-        model[errorHookProp].set(false);
+      // TODO: more strict check
+      if (model.isError) {
+        model.isError.set(false);
       }
     }
 
@@ -196,7 +109,7 @@ export class BaseDomainStore {
 
       runInAction(() => {
         this.data.addOrUpdate(slicedData);
-        this.isProcessing = false;
+        this.isProcessing.set(false);
         this.isEmpty.set(false);
       });
 
@@ -206,47 +119,102 @@ export class BaseDomainStore {
 
       if (this.data.has(id)) {
         const model = this.data.get(id);
-        const errorHookProp = this.schema.getErrorHookProp(model);
 
-        if (errorHookProp) {
-          model[errorHookProp].set(true);
+        if (model.isError) {
+          model.isError.set(true);
         }
       }
+
       this.hooks.triggerFetchOneFailed(e);
 
       throw new Error(e);
     } finally {
       // TODO: dry ?
       const model = this.data.get(id);
-      const reloadingHookProp = this.schema.getReloadingHookProp(model);
 
-      if (reloadingHookProp) {
-        model[reloadingHookProp].set(false);
+      if (model.isReloading) {
+        model.isReloading.set(false);
+      }
+
+      this.isProcessing.set(false);
+    }
+  }
+
+  async createItem(model) {
+    this.isProcessing.set(true);
+    let preparedModel;
+
+    // TODO: test
+    if (model instanceof DomainModel) {
+      preparedModel = model.serialize();
+
+      if (model.isError) {
+        model.isError.set(false);
+      }
+
+      if (model.isSaving) {
+        model.isSaving.set(true);
+      }
+
+      // Removes ID property from model
+      delete preparedModel[this.schema.modelIdentifier];
+    } else {
+      // In case when this is just user data
+      preparedModel = model;
+    }
+
+    try {
+      this.hooks.triggerWillCreateNew();
+
+      const response = await this.service.createItem(preparedModel);
+      const slicedData = await this.hooks.triggerDidCreateNew(response);
+
+      if (Array.isArray(slicedData)) {
+        throw new Error('Ypu return array instead of object');
+      }
+
+      runInAction(() => {
+        this.data.addOrUpdate(slicedData);
+        this.isProcessing.set(false);
+        this.isEmpty.set(false);
+      });
+    } catch (e) {
+      this.logger.error(e);
+      this.hooks.triggerCreateNewFailed(e);
+
+      if (model instanceof DomainModel) {
+        if (model.isError) {
+          model.isError.set(true);
+        }
+      }
+
+      throw new Error(e);
+    } finally {
+      this.isProcessing.set(false);
+
+      if (model instanceof DomainModel) {
+        model.isSaving.set(false);
       }
     }
+  }
+
+  createEmpty() {
+    return this.schema.createEmpty();
   }
 
   @computed get asArray() {
     return this.data.array;
   }
 
-  getMap = () => {
-    return this.data.entities;
-  }
+  getMap = () => this.data.entities;
 
-  getOne = (id) => {
-    return this.data.get(id);
-  }
+  getOne = id => this.data.get(id);
 
-  has = (id) => {
-    return this.data.has(id);
-  };
-
-  get isBusy() {
-    return this.isProcessing;
-  }
+  has = id => this.data.has(id);
 
   get storeName() {
     return this.constructor.storeName || this.constructor.name;
   }
 }
+
+export { DomainModel, BaseDomainStore, resolveStore };

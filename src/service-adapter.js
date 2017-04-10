@@ -1,4 +1,4 @@
-export class ServiceAdapter {
+export default class ServiceAdapter {
   constructor(service) {
     this.service = service;
   }
@@ -9,5 +9,9 @@ export class ServiceAdapter {
 
   fetchOne(...args) {
     return this.service.fetchOne(...args);
+  }
+
+  createItem(...args) {
+    return this.service.createItem(...args);
   }
 }

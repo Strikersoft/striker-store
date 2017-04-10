@@ -1,6 +1,6 @@
-import { observable, computed, action } from 'mobx';
+import { observable, action } from 'mobx';
 
-export class EntitiesAdapter {
+export default class EntitiesAdapter {
   @observable entities = observable.map({});
 
   constructor(schema) {

@@ -1,99 +1,128 @@
-import React, { Component, PropTypes } from 'react';
+import React, { Component } from 'react';
+import { shape, func, string, bool } from 'prop-types';
 import { observer } from 'mobx-react';
 import { Route, Switch, Link } from 'react-router-dom';
-import { fromPromise } from 'mobx-utils';
 
 import CrudExampleStore from '../demo-stores/crud-example';
-import FetchButton from '../demo-components/fetch-button';
-import { LoadingIndicator, ErrorIndicator } from '../demo-components/indicators';
+import UserList from '../demo-components/user-list';
+import UserDetails from '../demo-components/user-details';
 
 import { FetchAll, FetchOne } from '../../../src/react-router';
 
 @observer
-class UserItem extends Component {
+class UserManage extends Component {
   static propTypes = {
-    user: PropTypes.object.isRequired
+    model: shape({
+      viewModel: shape({
+        name: string,
+        submit: func
+      })
+    }).isRequired,
+    store: shape({
+      createItem: func
+    }).isRequired,
+    edit: bool
+  }
+
+  static defaultProps = {
+    edit: false
   };
 
-  render() {
-    return (
-      <div>
-        {this.props.user.name}
-        <LoadingIndicator indicator={this.props.user.isReloading} />
-        <ErrorIndicator indicator={this.props.user.isError} />
-        <Link to={`/examples/crud/users/${this.props.user.id}`} >Go to details</Link>
-      </div>
-    );
-  }
-}
-
-@observer
-class UserList extends Component {
-  static propTypes = {
-    users: PropTypes.array.isRequired
+  changeName = ({ target }) => {
+    this.props.model.viewModel.name = target.value;
   };
 
+  addNew = () => {
+    this.props.model.viewModel.submit(); // save view model
+    this.props.store.createItem(this.props.model);
+  }
+
+  reset = () => this.props.model.viewModel.reset();
+
   render() {
+    const model = this.props.model.viewModel;
+
     return (
       <div>
-        {this.props.users.map(
-          (user) => (
-            <UserItem
-              key={user.id}
-              user={user}
-            />
-          )
-        )}
-       <LoadingIndicator indicator={this.props.isReloading} />
+        <label htmlFor="name">
+          Name: {model.name}
+          <br />
+          <input name="name" onChange={this.changeName} value={model.name || ''} />
+        </label>
+        <br />
+        Is saving: {model.isSaving.get().toString()}
+        <br />
+        <button onClick={this.addNew}>{this.props.edit ? 'Save' : 'Add new'}</button>
+        <button onClick={this.reset}>Reset</button>
       </div>
     );
   }
 }
 
-@observer
-class UserDetails extends Component {
-  render() {
-    return (
-      <div>
-        userId: {this.props.user.id}
-        <br />
-        userName: {this.props.user.name}
-        <br />
-        isReloading: {this.props.user.isReloading.get().toString()}
-      </div>
-    );
-  }
-}
+const CrudExample = () => (
+  <div>
+    <h2>CRUD example</h2>
+    <Link to="/examples/crud">Home</Link>
+    <Link to="/examples/crud/users">List</Link>
+    <Link to="/examples/crud/users/new">Create new</Link>
 
-export class CrudExample extends Component {
-  render() {
-    return (
-      <div>
-        <h2>CRUD example</h2>
-        <Link to="/examples/crud">Home</Link>
-        <Link to="/examples/crud/users">List</Link>
-
-        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-          <Route path="/examples/crud/users" render={({ match }) => (
-            <FetchAll
-              store={CrudExampleStore}
-              onlyOnInit={true}
-              whenLoading={<div>list is loading</div>}
-              whenFulfilled={({ data, isReloading }) => <UserList users={data} isReloading={isReloading} />}
-              whenRejected={(error) => <div>error</div>} />
+    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+      <Route
+        path="/examples/crud/users"
+        render={() => (
+          <FetchAll
+            store={CrudExampleStore}
+            onlyOnInit
+            whenLoading={<div>list is loading</div>}
+            whenFulfilled={({ data, isReloading }) => (
+              <UserList users={data} isReloading={isReloading} />
             )}
+            whenRejected={() => <div>error</div>}
           />
-          <Route exact path="/examples/crud/users/:id" render={({ match }) => (
+        )}
+      />
+      <Switch>
+        <Route
+          exact
+          path="/examples/crud/users/new"
+          render={() => (
+            <UserManage
+              store={CrudExampleStore}
+              model={CrudExampleStore.createEmpty()}
+            />
+          )}
+        />
+        <Route
+          exact
+          path="/examples/crud/users/:id"
+          render={({ match }) => (
             <FetchOne
               store={CrudExampleStore}
               id={match.params.id}
-              whenLoading={<div>details is loading</div>}
+              whenLoading={<div>details is loading template ...</div>}
               whenFulfilled={({ data }) => <UserDetails user={data} />}
-              whenRejected={(error) => <div>error</div>} />
-            )}
-          />
-        </div>
-      </div>
-    );
-  }
-}
+              whenRejected={() => <div>error</div>}
+            />
+          )}
+        />
+        <Route
+          exact
+          path="/examples/crud/users/:id/edit"
+          render={({ match }) => (
+            <FetchOne
+              store={CrudExampleStore}
+              id={match.params.id}
+              whenLoading={<div>edit is loading template ...</div>}
+              whenFulfilled={({ data }) => (
+                <UserManage store={CrudExampleStore} model={data} edit />
+              )}
+              whenRejected={() => <div>error</div>}
+            />
+          )}
+        />
+      </Switch>
+    </div>
+  </div>
+);
+
+export default CrudExample;

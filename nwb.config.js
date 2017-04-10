@@ -15,5 +15,20 @@ module.exports = {
         serializr: 'serializr'
       }
     }
+  },
+  webpack: {
+    loaders: {
+      babel: {
+        test: /\.jsx?/
+      }
+    },
+    rules: {
+      resolve: {
+        extensions: ['', '.js', '.jsx', '.json']
+      },
+      node: {
+        process: false
+      }
+    }
   }
-}
+};

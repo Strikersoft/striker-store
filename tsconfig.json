@@ -13,6 +13,7 @@
     "node_modules"
   ],
   "include": [
-    "**/*.js"
+    "**/*.js",
+    "**/*.jsx"
   ]
 }
