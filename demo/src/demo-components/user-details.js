@@ -1,5 +1,5 @@
 import React from 'react';
-import { shape, func, string } from 'prop-types';
+import { shape, func, string, number } from 'prop-types';
 import { observer } from 'mobx-react';
 import { Link } from 'react-router-dom';
 
@@ -27,7 +27,7 @@ UserDetails.propTypes = {
       get: func,
       set: func
     }),
-    id: string,
+    id: number,
     name: string
   }).isRequired
 };
