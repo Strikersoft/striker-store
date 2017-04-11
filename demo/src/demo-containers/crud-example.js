@@ -7,7 +7,8 @@ import CrudExampleStore from '../demo-stores/crud-example';
 import UserList from '../demo-components/user-list';
 import UserDetails from '../demo-components/user-details';
 
-import { FetchAll, FetchOne } from '../../../src/react-router';
+import FetchOne from '../../../src/react/fetch-one';
+import FetchAll from '../../../src/react/fetch-all';
 
 @observer
 class UserManage extends Component {
@@ -22,7 +23,7 @@ class UserManage extends Component {
       createItem: func
     }).isRequired,
     edit: bool
-  }
+  };
 
   static defaultProps = {
     edit: false
@@ -35,7 +36,7 @@ class UserManage extends Component {
   addNew = () => {
     this.props.model.viewModel.submit(); // save view model
     this.props.store.createItem(this.props.model);
-  }
+  };
 
   reset = () => this.props.model.viewModel.reset();
 
@@ -51,6 +52,8 @@ class UserManage extends Component {
         </label>
         <br />
         Is saving: {model.isSaving.get().toString()}
+        <br />
+        Is saved: {model.isSaved.get().toString()}
         <br />
         <button onClick={this.addNew}>{this.props.edit ? 'Save' : 'Add new'}</button>
         <button onClick={this.reset}>Reset</button>
@@ -73,7 +76,7 @@ const CrudExample = () => (
           <FetchAll
             store={CrudExampleStore}
             onlyOnInit
-            whenLoading={<div>list is loading</div>}
+            whenLoading={() => <div>list is loading</div>}
             whenFulfilled={({ data, isReloading }) => (
               <UserList users={data} isReloading={isReloading} />
             )}
@@ -99,7 +102,7 @@ const CrudExample = () => (
             <FetchOne
               store={CrudExampleStore}
               id={match.params.id}
-              whenLoading={<div>details is loading template ...</div>}
+              whenLoading={() => <div>details is loading template ...</div>}
               whenFulfilled={({ data }) => <UserDetails user={data} />}
               whenRejected={() => <div>error</div>}
             />
@@ -112,7 +115,7 @@ const CrudExample = () => (
             <FetchOne
               store={CrudExampleStore}
               id={match.params.id}
-              whenLoading={<div>edit is loading template ...</div>}
+              whenLoading={() => <div>edit is loading template ...</div>}
               whenFulfilled={({ data }) => (
                 <UserManage store={CrudExampleStore} model={data} edit />
               )}

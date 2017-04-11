@@ -1,5 +1,5 @@
 import { action, computed } from 'mobx';
-import { deserialize, update, getDefaultModelSchema } from 'serializr';
+import { deserialize as doDeserialize, update as doUpdate, getDefaultModelSchema } from 'serializr';
 import DomainModel from './domain-model';
 
 export default class SchemaAdapter {
@@ -9,8 +9,8 @@ export default class SchemaAdapter {
   }
 
   @action('deserialize payload of model')
-  deserialize = (payload) => {
-    const model = deserialize(this.schema, payload);
+  deserialize = (payload, isNew = false) => {
+    const model = doDeserialize(this.schema, payload);
 
     if (!this.modelIdentifier) {
       throw new Error('Can\'t deserialize without identifier() in schema.');
@@ -18,13 +18,14 @@ export default class SchemaAdapter {
 
     if (model instanceof DomainModel) {
       model.reload = () => this.store.fetchOne(model[this.modelIdentifier]);
+      model.isSaved.set(!isNew);
     }
 
     return model;
   };
 
   @action('update existing model')
-  update = (model, payload) => update(model, payload);
+  update = (model, payload) => doUpdate(model, payload);
 
   serialize() {
     throw new Error('not implemented');
@@ -47,7 +48,7 @@ export default class SchemaAdapter {
   }
 
   createEmpty() {
-    return this.deserialize({ [this.modelIdentifier]: false });
+    return this.deserialize({ [this.modelIdentifier]: false }, true);
   }
 
   @action('desrialize array of payload models')
