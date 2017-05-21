@@ -35,7 +35,12 @@ class UserManage extends Component {
 
   addNew = () => {
     this.props.model.viewModel.submit(); // save view model
-    this.props.store.createItem(this.props.model);
+
+    if (this.props.edit) {
+      this.props.store.updateItem(this.props.model);
+    } else {
+      this.props.store.createItem(this.props.model);
+    }
   };
 
   reset = () => this.props.model.viewModel.reset();
@@ -54,6 +59,8 @@ class UserManage extends Component {
         Is saving: {model.isSaving.get().toString()}
         <br />
         Is saved: {model.isSaved.get().toString()}
+        <br />
+        Is updating: {model.isUpdating.get().toString()}
         <br />
         <button onClick={this.addNew}>{this.props.edit ? 'Save' : 'Add new'}</button>
         <button onClick={this.reset}>Reset</button>
@@ -78,7 +85,7 @@ const CrudExample = () => (
             onlyOnInit
             whenLoading={() => <div>list is loading</div>}
             whenFulfilled={({ data, isReloading }) => (
-              <UserList users={data} isReloading={isReloading} />
+              <UserList users={data} isReloading={isReloading} withDelete />
             )}
             whenRejected={() => <div>error</div>}
           />

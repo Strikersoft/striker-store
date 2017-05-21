@@ -23,7 +23,7 @@ export default class BaseDomainStore {
     this.schema = new SchemaAdapter(this.constructor.modelSchema, this);
     this.data = new EntitiesAdapter(this.schema);
 
-    registeredStores[this.storeName] = this;
+    registeredStores[this.getStoreName()] = this;
   }
 
   storeDidFetchAll({ response }) {
@@ -35,6 +35,14 @@ export default class BaseDomainStore {
   }
 
   storeDidCreateNew({ response }) {
+    return response;
+  }
+
+  storeDidUpdate({ response }) {
+    return response;
+  }
+
+  storeDidDelete({ response }) {
     return response;
   }
 
@@ -130,25 +138,76 @@ export default class BaseDomainStore {
 
         this.isProcessing.set(false);
       });
-
     }
   }
 
-  async createItem(model) {
+  async deleteItem(model) {
+    runInAction(() => {
+      this.isProcessing.set(true);
+
+      if (model instanceof DomainModel) {
+        model.isError.set(false);
+        model.isDeleting.set(true);
+      }
+    });
+
+    try {
+      this.hooks.triggerWillDelete(model);
+      const response = await this.service.deleteItem(model);
+      await this.hooks.triggerDidDelete(response);
+
+      runInAction(() => {
+        this.data.deleteItem(model);
+        this.isProcessing.set(false);
+
+        if (model instanceof DomainModel) {
+          model.isSaved.set(true);
+          model.isDeleted.set(true);
+        }
+      });
+    } catch (e) {
+      this.logger.error(e);
+      this.hooks.triggerDeleteFailed(e);
+
+      runInAction(() => {
+        if (model instanceof DomainModel) {
+          model.isError.set(true);
+          model.isDeleted.set(false);
+        }
+      });
+
+      throw new Error(e);
+    } finally {
+      this.isProcessing.set(false);
+
+      if (model instanceof DomainModel) {
+        model.isDeleting.set(false);
+      }
+    }
+  }
+
+  async updateItem(model) {
+    return this.createItem(model, true);
+  }
+
+  async createItem(model, isUpdate = false) {
     let preparedModel;
 
     runInAction(() => {
       this.isProcessing.set(true);
 
-      // TODO: test
       if (model instanceof DomainModel) {
         preparedModel = model.serialize();
 
         model.isError.set(false);
-        model.isSaving.set(true);
 
-        // Removes ID property from model
-        delete preparedModel[this.schema.modelIdentifier];
+        if (!isUpdate) {
+          // Removes ID property from model
+          model.isSaving.set(true);
+          delete preparedModel[this.schema.modelIdentifier];
+        } else {
+          model.isUpdating.set(true);
+        }
       } else {
         // In case when this is just user data
         preparedModel = model;
@@ -156,13 +215,20 @@ export default class BaseDomainStore {
     });
 
     try {
-      this.hooks.triggerWillCreateNew();
+      let slicedData;
 
-      const response = await this.service.createItem(preparedModel);
-      const slicedData = await this.hooks.triggerDidCreateNew(response);
+      if (!isUpdate) {
+        this.hooks.triggerWillCreateNew();
+        const response = await this.service.createItem(preparedModel);
+        slicedData = await this.hooks.triggerDidCreateNew(response);
+      } else {
+        this.hooks.triggerWillUpdate(preparedModel);
+        const response = await this.service.updateItem(preparedModel);
+        slicedData = await this.hooks.triggerDidUpdate(response);
+      }
 
       if (Array.isArray(slicedData)) {
-        throw new Error('Ypu return array instead of object');
+        throw new Error('You return array instead of object');
       }
 
       runInAction(() => {
@@ -176,12 +242,16 @@ export default class BaseDomainStore {
       });
     } catch (e) {
       this.logger.error(e);
-      this.hooks.triggerCreateNewFailed(e);
+
+      if (!isUpdate) {
+        this.hooks.triggerCreateNewFailed(e);
+      } else {
+        this.hooks.triggerDidUpdateFailed(e);
+      }
 
       runInAction(() => {
         if (model instanceof DomainModel) {
           model.isError.set(true);
-          model.isSaved.set(false);
         }
       });
 
@@ -191,6 +261,7 @@ export default class BaseDomainStore {
 
       if (model instanceof DomainModel) {
         model.isSaving.set(false);
+        model.isUpdating.set(false);
       }
     }
   }
@@ -209,7 +280,13 @@ export default class BaseDomainStore {
 
   has = id => this.data.has(id);
 
-  get storeName() {
-    return this.constructor.storeName || this.constructor.name;
+  getStoreName() {
+    const name = this.constructor.storeName || this.constructor.name;
+
+    if (typeof name === 'function') {
+      return name();
+    }
+
+    return name;
   }
 }

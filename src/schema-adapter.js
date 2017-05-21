@@ -18,6 +18,8 @@ export default class SchemaAdapter {
 
     if (model instanceof DomainModel) {
       model.reload = () => this.store.fetchOne(model[this.modelIdentifier]);
+      model.delete = () => this.store.deleteItem(model);
+      model.getStore = () => this.store;
       model.isSaved.set(!isNew);
     }
 

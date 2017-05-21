@@ -42,6 +42,28 @@ class CRUDUserService {
       .then(response => response.json())
       .then(data => new Promise(resolve => setTimeout(() => resolve(data), 2000)));
   }
+
+  updateItem(model) {
+    return fetch(`https://jsonplaceholder.typicode.com/users/${model.id}`, { method: 'PUT', body: JSON.stringify(model) })
+      .then((response) => {
+        if (response.ok) {
+          return response;
+        }
+        return Promise.reject(response);
+      })
+      .then(response => response.json());
+  }
+
+  deleteItem(model) {
+    return fetch(`https://jsonplaceholder.typicode.com/users/${model.id}`, { method: 'DELETE' })
+      .then((response) => {
+        if (response.ok) {
+          return response;
+        }
+        return Promise.reject(response);
+      })
+      .then(response => response.json());
+  }
 }
 
 class CRUDStore extends BaseDomainStore {

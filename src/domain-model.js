@@ -7,6 +7,10 @@ export default class DomainModel {
   isError = observable.box(false);
   isSaving = observable.box(false);
   isSaved = observable.box(false);
+  isUpdating = observable.box(false);
+  isDeleting = observable.box(false);
+  isDeleted = observable.box(false);
+
 
   get viewModel() {
     if (!this.reusedViewModel) {
