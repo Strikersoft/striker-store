@@ -53,13 +53,16 @@ More info: https://github.com/mobxjs/serializr
 
 #### Example
 ```
+import { DomainModel } from 'striker-store'
 import { serializable, identifier } from 'serializr';
 
-class ExampleUserModel {
+class ExampleUserModel extends DomainModel {
   @serializable(identifier()) id;
   @serializable name;
 }
 ```
+
+Now you have all helpers you your model. And field `id` will be used to track your model id.
 
 ### Services
 Service is communication with API.
@@ -100,7 +103,7 @@ Store have following methods to manipulate with your data:
 
 As you can see naming of the methods is equavilent of your `service` methods.
 #### Store Lifecycle
-
+To add more control we provide hooks for you to override all aspects of store life.
 ##### Resolvers
 It have next lifecycle (resolver) methods:
 - storeDidFetchAll
@@ -158,7 +161,7 @@ To get stores from another stores (as was described in `resolvers` serction) you
 Quick example:
 ```
 import { serializable, identifier } from 'serializr';
-import { BaseDomainStore } from '../../../src';
+import { BaseDomainStore } from 'striker-store';
 
 class ExampleUserModel {
   @serializable(identifier()) id;
