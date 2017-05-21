@@ -4,6 +4,7 @@
   "description": "Simple abstraction for model managment in react apps with mobx",
   "main": "lib/index.js",
   "module": "es/index.js",
+  "typings": "lib/index.d.ts",
   "files": [
     "css",
     "es",

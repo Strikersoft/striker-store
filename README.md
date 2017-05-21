@@ -182,7 +182,7 @@ class ExampleUserStore extends BaseDomainStore {
   static modelSchema = ExampleUserModel;
 }
 
-const store new ExampleUserStore();
+const store = new ExampleUserStore();
 
 import React, { PureComponent } from 'react';
 import { observer } from 'mobx-react';
@@ -197,7 +197,7 @@ class QuickExample extends PureComponent {
         <h2>Fetching</h2>
         <div>Do initial fetch pls</div>
         <div>
-          {store.asArray.map(user => <div key={user.id}> {user.name} />)}
+          {store.asArray.map(user => <div key={user.id}> {user.name} </div>)}
         </div>
         <button onClick={this.fetch}>
           Fetch
