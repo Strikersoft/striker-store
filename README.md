@@ -1,6 +1,6 @@
 # striker-store
 
-[![Travis](https://travis-ci.org/Strikersoft/striker-store.svg?branch=master)]
+![Travis](https://travis-ci.org/Strikersoft/striker-store.svg?branch=master)
 
 > Like ember-data but for mobx and react
 
@@ -9,8 +9,7 @@
 
 - [Install](#install)
 - [Usage](#usage)
-- [Examples & Demos](#examples--demos)
-- [API](#api)
+- [Examples](#examples)
 - [Contribute](#contribute)
 - [License](#license)
 * * *
@@ -215,6 +214,9 @@ There is an helper components to use `react-router`.
 
 #### Example
 Please, check out `crud-example` in `demo` folder.
+
+## Examples
+Please, check out `demo` folder or https://stiker-store.surge.sh
 
 ## Contribute
 We are welcome to contribute. Just raise a pull request.
