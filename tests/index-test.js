@@ -1,23 +1,23 @@
-import expect from 'expect'
-import React from 'react'
-import {render, unmountComponentAtNode} from 'react-dom'
+import expect from 'expect';
+import React from 'react';
+import { render, unmountComponentAtNode } from 'react-dom';
 
-import { FetchingBasicExample } from '../demo/src/demo-containers/fetching-basic'
+import FetchingBasicExample from '../demo/src/demo-containers/fetching-basic';
 
 describe('FetchingBasicExample tests', () => {
-  let node
+  let node;
 
   beforeEach(() => {
-    node = document.createElement('div')
-  })
+    node = document.createElement('div');
+  });
 
   afterEach(() => {
-    unmountComponentAtNode(node)
-  })
+    unmountComponentAtNode(node);
+  });
 
   it('renders demo app', () => {
     render(<FetchingBasicExample />, node, () => {
       expect(node.innerHTML).toExist();
-    })
-  })
-})
+    });
+  });
+});
