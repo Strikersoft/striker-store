@@ -4,14 +4,14 @@ export default class Logger {
   }
 
   debug(...args) {
-    console.log(`[${this.name}]`, ...args);
+    // console.log(`[${this.name}]`, ...args);
   }
 
   warn(...args) {
-    console.warn(`[${this.name}]`, ...args);
+    // console.warn(`[${this.name}]`, ...args);
   }
 
   error(...args) {
-    console.error(`[${this.name}]`, ...args);
+    // console.error(`[${this.name}]`, ...args);
   }
 }

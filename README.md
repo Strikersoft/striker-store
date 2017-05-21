@@ -155,10 +155,13 @@ So class: `class MyStore {}` will be resitered as `MyStore`.
 To get stores from another stores (as was described in `resolvers` serction) you should use `stores` from resolvers `did` hooks.
 
 #### Example
-Quick example:
+Quick example using typescript:
 ```
 import { serializable, identifier } from 'serializr';
 import { BaseDomainStore } from 'striker-store';
+import * as React from 'react';
+import { observer } from 'mobx-react';
+
 
 class ExampleUserModel {
   @serializable(identifier()) id;
@@ -184,29 +187,24 @@ class ExampleUserStore extends BaseDomainStore {
 
 const store = new ExampleUserStore();
 
-import React, { PureComponent } from 'react';
-import { observer } from 'mobx-react';
-
-@observer
-class QuickExample extends PureComponent {
-  fetch = () => FetchingBasicStore.fetchAll();
-
-  render() {
-    return (
-      <div>
-        <h2>Fetching</h2>
-        <div>Do initial fetch pls</div>
-        <div>
-          {store.asArray.map(user => <div key={user.id}> {user.name} </div>)}
-        </div>
-        <button onClick={this.fetch}>
-          Fetch
-        </button>
-      </div>
-    );
-  }
+function doFetch() {
+  store.fetchAll();
 }
 
+function QuickExample() {
+  return (
+    <div>
+      <h2>Fetching</h2>
+      <div>Do initial fetch pls</div>
+      <div>
+        {store.asArray.map(user => <div key={user.id}> {user.name} </div>)}
+      </div>
+      <button onClick={doFetch}>Fetch</button>
+    </div>
+  );
+}
+
+export default observer(QuickExample);
 ```
 
 ### ReactRouter v4 integration
