@@ -100,15 +100,15 @@ export default class LifecycleHooks {
 
   triggerDeleteNewFailed(error) {
     if (this.ref.storeDeleteFailed) {
-      this.ref.storeDeleteFailedd(error);
+      this.ref.storeDeleteFailed(error);
       this.logger.debug('Hook storeDeleteFailed triggered', error);
     }
   }
 
   triggerDidUpdateFailed(error) {
-    if (this.ref.storeDidFailed) {
-      this.ref.storeDidFailed(error);
-      this.logger.debug('Hook storeDidFailed triggered', error);
+    if (this.ref.storeUpdateFailed) {
+      this.ref.storeUpdateFailed(error);
+      this.logger.debug('Hook storeUpdateFailed triggered', error);
     }
   }
 
