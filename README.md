@@ -1,8 +1,6 @@
 # striker-store
 
-[![Travis](https://travis-ci.org/Strikersoft/striker-store.svg?branch=master)][https://travis-ci.org/Strikersoft/striker-store.svg?branch=master]
-[![npm package](https://img.shields.io/npm/v/striker-store.png?style=flat-square)][https://img.shields.io/npm/v/striker-store.png?style=flat-square]
-[![Coverage Status](https://coveralls.io/repos/github/Strikersoft/striker-store/badge.svg?branch=master)](https://coveralls.io/github/Strikersoft/striker-store?branch=master)
+[![Travis](https://travis-ci.org/Strikersoft/striker-store.svg?branch=master)]
 
 > Like ember-data but for mobx and react
 
