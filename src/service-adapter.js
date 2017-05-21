@@ -14,4 +14,12 @@ export default class ServiceAdapter {
   createItem(...args) {
     return this.service.createItem(...args);
   }
+
+  updateItem(...args) {
+    return this.service.updateItem(...args);
+  }
+
+  deleteItem(...args) {
+    return this.service.deleteItem(...args);
+  }
 }

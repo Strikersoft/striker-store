@@ -13,6 +13,8 @@ const UserDetails = observer(({ user }) => (
     <br />
     isError: {user.isError.get().toString()}
     <br />
+    isDeleting: {user.isDeleting.get().toString()}
+    <br />
     <Link to={`/examples/crud/users/${user.id}/edit`} >Go to edit</Link>
   </div>
 ));

@@ -49,6 +49,34 @@ export default class LifecycleHooks {
     return sliced;
   }
 
+  async triggerDidUpdate(data) {
+    if (!this.ref.storeDidUpdate) {
+      throw new Error('no required LifecycleHook - storeDidUpdate');
+    }
+
+    const sliced = await this.ref.storeDidUpdate({
+      response: data, stores: this.registeredStores
+    });
+
+    this.logger.debug('Hook storeDidUpdate triggered', sliced);
+
+    return sliced;
+  }
+
+  async triggerDidDelete(data) {
+    if (!this.ref.storeDidDelete) {
+      throw new Error('no required LifecycleHook - triggerDidDelete');
+    }
+
+    const sliced = await this.ref.storeDidDelete({
+      response: data, stores: this.registeredStores
+    });
+
+    this.logger.debug('Hook storeDidDelete triggered', sliced);
+
+    return sliced;
+  }
+
   triggerFetchAllFailed(error) {
     if (this.ref.storeFetchAllFailed) {
       this.ref.storeFetchAllFailed(error);
@@ -70,6 +98,20 @@ export default class LifecycleHooks {
     }
   }
 
+  triggerDeleteNewFailed(error) {
+    if (this.ref.storeDeleteFailed) {
+      this.ref.storeDeleteFailedd(error);
+      this.logger.debug('Hook storeDeleteFailed triggered', error);
+    }
+  }
+
+  triggerDidUpdateFailed(error) {
+    if (this.ref.storeDidFailed) {
+      this.ref.storeDidFailed(error);
+      this.logger.debug('Hook storeDidFailed triggered', error);
+    }
+  }
+
   triggerWillFetchAll() {
     if (this.ref.storeWillFetchAll) {
       this.ref.storeWillFetchAll();
@@ -88,6 +130,20 @@ export default class LifecycleHooks {
     if (this.ref.storeWillCreateNew) {
       this.ref.storeWillCreateNew();
       this.logger.debug('Hook storeWillCreateNew triggered');
+    }
+  }
+
+  triggerWillUpdate() {
+    if (this.ref.storeWillUpdate) {
+      this.ref.storeWillUpdate();
+      this.logger.debug('Hook storeWillUpdate triggered');
+    }
+  }
+
+  triggerWillDelete() {
+    if (this.ref.storeWillDelete) {
+      this.ref.storeWillDelete();
+      this.logger.debug('Hook storeWillDelete triggered');
     }
   }
 }

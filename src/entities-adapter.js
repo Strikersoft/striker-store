@@ -40,6 +40,11 @@ export default class EntitiesAdapter {
     }
   }
 
+  deleteItem(model) {
+    const id = model[this.schema.modelIdentifier];
+    this.entities.delete(id);
+  }
+
   has(id) {
     return this.entities.has(id);
   }
